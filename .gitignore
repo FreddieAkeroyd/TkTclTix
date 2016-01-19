@@ -1,0 +1,10 @@
+Debug_*/
+Release_*/
+Debug/
+Release/
+*.obj
+*.exe
+*.dll
+*.pdb
+versions.vc
+version.vc
