@@ -46,10 +46,10 @@ SRC_ROOT	= ..\..
 TCL_MAJOR	= 8
 !ENDIF
 !IFNDEF TCL_MINOR
-TCL_MINOR	= 4
+TCL_MINOR	= 6
 !ENDIF
 !IFNDEF TCL_PATCH
-TCL_PATCH	= 7
+TCL_PATCH	= 4
 !ENDIF
 
 TK_MAJOR	= $(TCL_MAJOR)
@@ -75,8 +75,8 @@ TK_PATCH	= $(TCL_PATCH)
 #
 # Visual C++ 6.0
 #
-TOOLS32 	= c:\Program Files\Microsoft Visual Studio\VC98
-TOOLS32_rc 	= c:\Program Files\Microsoft Visual Studio\Common\MSDev98
+TOOLS32 	= %VCINSTALLDIR%
+TOOLS32_rc 	= ..\Common
 !ENDIF
 
 # Set this to the appropriate value of /MACHINE: for your platform
@@ -118,10 +118,15 @@ default:	all
 # Build tools
 #
 
-cc32   		= "$(TOOLS32)\bin\cl.exe"
-link32 		= "$(TOOLS32)\bin\link.exe"
-include32 	= -I"$(TOOLS32)\include"
-
+!IF "$(MACHINE)" == "AMD64"
+cc32   		= "$(TOOLS32)bin\amd64\cl.exe"
+#link32 		= "$(TOOLS32)bin\amd64\link.exe"
+link32 		= "link.exe"
+!ELSE
+cc32   		= "$(TOOLS32)bin\cl.exe"
+link32 		= "$(TOOLS32)bin\link.exe"
+!ENDIF
+include32 	= -I"$(TOOLS32)include"
 RMDIR		= rd
 MKDIR		= md
 RM		= del
@@ -133,7 +138,7 @@ RM		= del
 !IF "$(NODEBUG)" == "1"
 ldebug 		= /RELEASE
 !ELSE
-ldebug 		= -debug:full -debugtype:cv
+ldebug 		= /debug /debugtype:cv
 !ENDIF
 
 # declarations common to all linker options
@@ -163,7 +168,7 @@ optflags 	= -Oti -Gs -GD
 optflags 	= -Od -Zi
 !ENDIF
 
-cvarsdll  	= -D_X86_=1 -DWIN32 -D_WIN32 -D_MT -D_DLL
+cvarsdll  	= -DWIN32 -D_WIN32 -D_MT -D_DLL -DSTDC_HEADERS=1
 cflagsdll 	= $(cvarsdll) -c -W3 -nologo -Fp$(TMPDIR)\ -YX -MD \
 	          $(optflags)
 
@@ -215,22 +220,23 @@ DLLDEPENDS	= $(TK_LIB) $(TCL_LIB)
 
 !IF "$(NODEBUG)" == "1"
 DBGX    	=
-TMPDIR 		= Release
+TMPDIR 		= Release_$(MACHINE)_VC10
 !ELSE
-DBGX 		= d
-TMPDIR 		= Debug
+DBGX 		= g
+TMPDIR 		= Debug_$(MACHINE)_VC10
 !ENDIF
 
 #
 # File and dir names for Tcl
 #
 
-!IF "$(TCL_DBGX)" != "d"
-TCL_TMPDIR	= Release
+!IF "$(TCL_DBGX)" != "g"
+TCL_TMPDIR	= Release_$(MACHINE)_VC10
 !ELSE
-TCL_TMPDIR	= Debug
+TCL_TMPDIR	= Debug_$(MACHINE)_VC10
 !ENDIF
 
+!IF "$(TCL_DIR)" == ""
 !IF "$(TCL_PATCH)" == ""
 TCL_DIR		= $(SRC_ROOT)\tcl$(TCL_MAJOR).$(TCL_MINOR)
 TK_DIR		= $(SRC_ROOT)\tk$(TCL_MAJOR).$(TCL_MINOR)
@@ -238,36 +244,39 @@ TK_DIR		= $(SRC_ROOT)\tk$(TCL_MAJOR).$(TCL_MINOR)
 TCL_DIR		= $(SRC_ROOT)\tcl$(TCL_MAJOR).$(TCL_MINOR).$(TCL_PATCH)
 TK_DIR		= $(SRC_ROOT)\tk$(TCL_MAJOR).$(TCL_MINOR)
 !ENDIF
+!ENDIF
 
 TCL_LIBDIR      = $(TCL_DIR)\win\$(TCL_TMPDIR)
-TCL_LIB  	= $(TCL_LIBDIR)\tcl$(TCL_MAJOR)$(TCL_MINOR)$(TCL_DBGX).lib
-TCL_DLL  	= $(TCL_LIBDIR)\tcl$(TCL_MAJOR)$(TCL_MINOR)$(TCL_DBGX).dll
-TCL_STUBLIB  	= $(TCL_LIBDIR)\tclstub$(TCL_MAJOR)$(TCL_MINOR)$(TCL_DBGX).lib
-TCLSH_EXE	= $(TCL_LIBDIR)\tclsh$(TCL_MAJOR)$(TCL_MINOR)$(TCL_DBGX).exe
+TCL_LIB  	= $(TCL_LIBDIR)\tcl$(TCL_MAJOR)$(TCL_MINOR)t$(TCL_DBGX).lib
+TCL_DLL  	= $(TCL_LIBDIR)\tcl$(TCL_MAJOR)$(TCL_MINOR)t$(TCL_DBGX).dll
+TCL_STUBLIB  	= $(TCL_LIBDIR)\tclstub$(TCL_MAJOR)$(TCL_MINOR).lib
+TCLSH_EXE	= $(TCL_LIBDIR)\tclsh$(TCL_MAJOR)$(TCL_MINOR)t$(TCL_DBGX).exe
 
 TK_LIBDIR       = $(TK_DIR)\win\$(TK_TMPDIR)
-TK_LIB  	= $(TK_LIBDIR)\tk$(TCL_MAJOR)$(TCL_MINOR)$(TCL_DBGX).lib
-TK_DLL  	= $(TK_LIBDIR)\tk$(TCL_MAJOR)$(TCL_MINOR)$(TCL_DBGX).dll
+TK_LIB  	= $(TK_LIBDIR)\tk$(TCL_MAJOR)$(TCL_MINOR)t$(TCL_DBGX).lib
+TK_DLL  	= $(TK_LIBDIR)\tk$(TCL_MAJOR)$(TCL_MINOR)t$(TCL_DBGX).dll
 
 #
 # File and dir names for Tk
 #
 
-!IF "$(TK_DBGX)" == "d"
-TK_TMPDIR	= Debug
+!IF "$(TK_DBGX)" == "g"
+TK_TMPDIR	= Debug_$(MACHINE)_VC10
 !ELSE
-TK_TMPDIR	= Release
+TK_TMPDIR	= Release_$(MACHINE)_VC10
 !ENDIF
 
+!IF "$(TK_DIR)" == ""
 !IF "$(TK_PATCH)" == ""
 TK_DIR		= $(SRC_ROOT)\tk$(TK_MAJOR).$(TK_MINOR)
 !ELSE
 TK_DIR		= $(SRC_ROOT)\tk$(TK_MAJOR).$(TK_MINOR).$(TK_PATCH)
 !ENDIF
+!ENDIF
 
 TK_LIBDIR       = $(TK_DIR)\win\$(TK_TMPDIR)
-TK_LIB  	= $(TK_LIBDIR)\tk$(TK_MAJOR)$(TK_MINOR)$(TK_DBGX).lib
-TK_STUBLIB  	= $(TK_LIBDIR)\tkstub$(TK_MAJOR)$(TK_MINOR)$(TK_DBGX).lib
+TK_LIB  	= $(TK_LIBDIR)\tk$(TK_MAJOR)$(TK_MINOR)t$(TK_DBGX).lib
+TK_STUBLIB  	= $(TK_LIBDIR)\tkstub$(TK_MAJOR)$(TK_MINOR).lib
 
 #
 # File and dir names for Tix
