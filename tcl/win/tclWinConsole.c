@@ -801,7 +801,9 @@ ConsoleOutputProc(
 
     *errorCode = 0;
     timeout = (infoPtr->flags & CONSOLE_ASYNC) ? 0 : INFINITE;
-    if (WaitForSingleObject(threadInfo->readyEvent,timeout) == WAIT_TIMEOUT) {
+	/* Freddie Akeroyd: we seem to get a NULL readyEvent with Open GENIE, maybe as we are not CONSOLE_ASYNC ? 
+	                    skipping just this check seems to work OK for us */
+    if (threadInfo->readyEvent != NULL && WaitForSingleObject(threadInfo->readyEvent,timeout) == WAIT_TIMEOUT) {
 	/*
 	 * The writer thread is blocked waiting for a write to complete and
 	 * the channel is in non-blocking mode.
