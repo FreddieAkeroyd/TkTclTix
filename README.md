@@ -3,4 +3,4 @@ Open GENIE analysis package
 
 Original code is on the "vendor" branch
 
-See http://tix.sourceforge.net/ and http://www.tcl.tk/software/tcltk/8.6.html for details ot tk/tcl/tix
+See http://tix.sourceforge.net/ and http://www.tcl.tk/software/tcltk/8.6.html for details of tk/tcl/tix
